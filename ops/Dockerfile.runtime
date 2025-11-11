@@ -1,0 +1,7 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY services/runtime/package.json pnpm-lock.yaml ./
+RUN pnpm i --prod
+COPY services/runtime/dist ./dist
+ENV PORT=4000
+CMD ["node", "dist/index.js"]

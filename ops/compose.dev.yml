@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  runtime:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.runtime
+    environment:
+      - PORT=4000
+      - POSTGRES_URL=${POSTGRES_URL}
+      - REDIS_URL=${REDIS_URL}
+    ports: ["4000:4000"]
+  workbench:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.workbench
+    ports: ["5173:80"]

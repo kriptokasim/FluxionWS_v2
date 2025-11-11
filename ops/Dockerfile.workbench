@@ -1,0 +1,9 @@
+FROM node:20-alpine as build
+WORKDIR /app
+COPY apps/workbench/package.json pnpm-lock.yaml ./
+RUN pnpm i
+COPY apps/workbench ./
+RUN pnpm build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html

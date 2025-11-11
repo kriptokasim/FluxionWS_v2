@@ -1,0 +1,365 @@
+{
+  "entities": {
+    "Run": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Run",
+      "type": "object",
+      "description": "Represents a single execution of a flow.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Run entity."
+        },
+        "flowId": {
+          "type": "string",
+          "description": "Identifier of the flow that was executed."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the flow that was executed."
+        },
+        "startedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the flow execution started.",
+          "format": "date-time"
+        },
+        "costCents": {
+          "type": "number",
+          "description": "Cost of the flow execution in cents."
+        }
+      },
+      "required": [
+        "id",
+        "flowId",
+        "version",
+        "startedAt",
+        "costCents"
+      ]
+    },
+    "Event": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Event",
+      "type": "object",
+      "description": "Represents an event that occurred during a flow execution.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Event entity."
+        },
+        "runId": {
+          "type": "string",
+          "description": "Reference to Run. (Relationship: Run 1:N Event)"
+        },
+        "ts": {
+          "type": "string",
+          "description": "Timestamp of when the event occurred.",
+          "format": "date-time"
+        },
+        "kind": {
+          "type": "string",
+          "description": "Type of event."
+        },
+        "data": {
+          "type": "string",
+          "description": "Data associated with the event."
+        }
+      },
+      "required": [
+        "id",
+        "runId",
+        "ts",
+        "kind",
+        "data"
+      ]
+    },
+    "KeyValue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "KeyValue",
+      "type": "object",
+      "description": "Represents a key-value pair for storing configuration or state.",
+      "properties": {
+        "k": {
+          "type": "string",
+          "description": "Key of the key-value pair."
+        },
+        "v": {
+          "type": "string",
+          "description": "Value of the key-value pair."
+        }
+      },
+      "required": [
+        "k",
+        "v"
+      ]
+    },
+    "Document": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Document",
+      "type": "object",
+      "description": "Represents a document stored in the system, potentially for RAG.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Document entity."
+        },
+        "project": {
+          "type": "string",
+          "description": "Project the document belongs to."
+        },
+        "text": {
+          "type": "string",
+          "description": "Text content of the document."
+        },
+        "meta": {
+          "type": "string",
+          "description": "Metadata associated with the document."
+        },
+        "embedding": {
+          "type": "string",
+          "description": "Vector embedding of the document text."
+        }
+      },
+      "required": [
+        "id",
+        "project",
+        "text",
+        "meta",
+        "embedding"
+      ]
+    },
+    "Flow": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Flow",
+      "type": "object",
+      "description": "Represents a flow definition.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Flow entity."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the flow."
+        },
+        "nodes": {
+          "type": "array",
+          "description": "Nodes that make up the flow.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "description": "Edges connecting the nodes in the flow.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "policy": {
+          "type": "string",
+          "description": "Policy ID associated with the flow."
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "nodes",
+        "edges",
+        "policy"
+      ]
+    },
+    "Node": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Node",
+      "type": "object",
+      "description": "Represents a node within a flow.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Node entity."
+        },
+        "kind": {
+          "type": "string",
+          "description": "Kind of node (e.g., LLMCall, HTTP)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Instance name of the node."
+        },
+        "inputs": {
+          "type": "array",
+          "description": "Input port schema of node.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "description": "Output port schema of node.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "configSchema": {
+          "type": "string",
+          "description": "JSON Schema for node configuration."
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "inputs",
+        "outputs",
+        "configSchema"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection for user profiles. Stores basic user information. This collection is for user management and authentication purposes.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/flows/{flowId}",
+        "definition": {
+          "entityName": "flow",
+          "schema": {
+            "$ref": "#/backend/entities/Flow"
+          },
+          "description": "Subcollection of flows owned by a specific user. Path-based ownership ensures only the user can access these flows.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "flowId",
+              "description": "The unique identifier for the flow."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/flows/{flowId}/runs/{runId}",
+        "definition": {
+          "entityName": "run",
+          "schema": {
+            "$ref": "#/backend/entities/Run"
+          },
+          "description": "Subcollection of runs for a specific flow, owned by a specific user. Inherits ownership from the parent flow.  Includes denormalized userId for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "flowId",
+              "description": "The unique identifier for the flow."
+            },
+            {
+              "name": "runId",
+              "description": "The unique identifier for the run."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/flows/{flowId}/runs/{runId}/events/{eventId}",
+        "definition": {
+          "entityName": "event",
+          "schema": {
+            "$ref": "#/backend/entities/Event"
+          },
+          "description": "Subcollection of events for a specific run, under a specific flow, owned by a specific user. Inherits ownership from the parent run. Includes denormalized userId for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "flowId",
+              "description": "The unique identifier for the flow."
+            },
+            {
+              "name": "runId",
+              "description": "The unique identifier for the run."
+            },
+            {
+              "name": "eventId",
+              "description": "The unique identifier for the event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/key_values/{keyValueId}",
+        "definition": {
+          "entityName": "keyValue",
+          "schema": {
+            "$ref": "#/backend/entities/KeyValue"
+          },
+          "description": "Collection for storing key-value pairs. Access should be restricted to administrators or specific service accounts.",
+          "params": [
+            {
+              "name": "keyValueId",
+              "description": "The unique identifier for the key-value pair."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/documents/{documentId}",
+        "definition": {
+          "entityName": "document",
+          "schema": {
+            "$ref": "#/backend/entities/Document"
+          },
+          "description": "Collection for storing documents. Documents are globally accessible, but write access is restricted to authorized users based on the 'project' field.",
+          "params": [
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/nodes/{nodeId}",
+        "definition": {
+          "entityName": "node",
+          "schema": {
+            "$ref": "#/backend/entities/Node"
+          },
+          "description": "Collection for storing node definitions.  Access should be restricted to administrators or specific service accounts.",
+          "params": [
+            {
+              "name": "nodeId",
+              "description": "The unique identifier for the node."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the Fluxion Workbench Studio, emphasizing security, scalability, and debuggability. It adheres to the principle of Authorization Independence by denormalizing authorization data and segregating data based on access requirements.\n\n**Authorization Independence:**\n\n*   For entities nested under users (e.g., flows), the structure utilizes path-based ownership (`/users/{userId}/flows/{flowId}`).\n*   For collaborative data, the structure employs a membership map (`members: {uid1: \"role\", uid2: \"role\"}`). In scenarios where a subcollection's access depends on the parent, the relevant attributes from the parent (owner, members) are denormalized into the subcollection's documents. This eliminates the need for `get()` calls in security rules.\n\n**Structural Segregation:**\n\nThe design segregates data with differing access needs into separate collections. For example, user-specific flows are stored under `/users/{userId}/flows/{flowId}`, while potentially shared or public data could reside in a separate top-level collection (if the requirements evolve to include shared flows).\n\n**Access Modeling:**\n\n*   Path-Based Ownership: `/users/{userId}/flows/{flowId}` exemplifies this, ensuring that only the user can access their flows.\n\n**QAPs (Rules are not Filters):**\n\nThe segregation of data into collections with homogeneous security postures ensures that list operations can be securely performed without filtering based on document content. The denormalization of authorization data into subcollections further supports secure list operations by allowing rules to be based on the presence of data within the document itself, rather than requiring complex queries or `get()` calls to parent documents.\n\nThis structure facilitates simple, robust, and easily debuggable security rules. The explicit nature of the data organization enhances clarity and predictability, making it easier to understand and maintain the system's security posture."
+  }
+}

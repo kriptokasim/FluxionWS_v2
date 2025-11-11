@@ -1,0 +1,38 @@
+/**
+ * @fileoverview Firestore Security Rules for Fluxion Workbench Studio.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for all user-specific data.
+ * A user can only access documents under their own user ID path (/users/{userId}).
+ * Public access and other more complex scenarios are explicitly disallowed for this MVP.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if the request is from the owner of the document.
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Rules for the main user document and all subcollections.
+    // Any document write under /users/{userId} is allowed if the requesting
+    // user's ID matches the {userId} in the path. This allows for creating
+    // the user document and any subcollection documents (like flows) in a
+    // single atomic batch write.
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Deny all access to other top-level collections by default.
+    match /key_values/{keyValueId} {
+      allow read, write: if false;
+    }
+    match /documents/{documentId} {
+      allow read, write: if false;
+    }
+    match /nodes/{nodeId} {
+      allow read, write: if false;
+    }
+  }
+}

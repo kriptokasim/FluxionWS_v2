@@ -1,0 +1,6 @@
+suite: hello-world
+metrics: [json_validity]
+cases:
+  - name: echo-llm
+    input: { prompt: "Say hi" }
+    expect: { contains: "hi" }

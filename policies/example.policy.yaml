@@ -1,0 +1,14 @@
+capabilities:
+  http_egress:
+    allow:
+      - api.github.com
+      - smtp.example.com
+  filesystem:
+    write: false
+  secrets:
+    allow: ["SMTP_PASS", "GITHUB_TOKEN"]
+
+guards:
+  - name: require-human-approval-before-side-effects
+    when: ["github.create_issue", "send.email"]
+    require: ["HumanApprove"]
