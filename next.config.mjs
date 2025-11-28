@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@fluxion/types', '@fluxion/local-store', '@fluxion/flows'],
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

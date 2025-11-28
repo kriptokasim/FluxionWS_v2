@@ -3,7 +3,7 @@
  * @fileOverview Shared utilities for AI flows.
  */
 
-import { Output } from 'genkit/generate';
+export type PromptOutput<T> = { output?: T };
 
 /**
  * A helper function to wrap a prompt call with retry logic for transient errors.
@@ -14,11 +14,11 @@ import { Output } from 'genkit/generate';
  * @returns The output of the prompt.
  */
 export async function runPromptWithRetry<I, O>(
-  prompt: (input: I) => Promise<Output<O>>,
+  prompt: (input: I) => Promise<PromptOutput<O>>,
   input: I,
   retries = 3,
   delayMs = 1000
-): Promise<Output<O>> {
+): Promise<PromptOutput<O>> {
   let lastError: any;
   for (let i = 0; i < retries; i++) {
     try {

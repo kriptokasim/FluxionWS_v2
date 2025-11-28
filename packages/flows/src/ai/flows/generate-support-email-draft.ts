@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview This file defines a Genkit flow for automatically drafting support email replies.
  *
@@ -7,9 +6,9 @@
  * - GenerateSupportEmailDraftOutput - The return type for the generateSupportEmailDraft function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import { runPromptWithRetry } from '@/ai/utils';
+import { ai } from '../genkit';
+import { z } from 'genkit';
+import { runPromptWithRetry } from '../utils';
 
 const GenerateSupportEmailDraftInputSchema = z.object({
   subject: z.string().describe('The subject of the customer support issue.'),

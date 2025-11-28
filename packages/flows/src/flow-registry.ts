@@ -1,6 +1,4 @@
-// src/lib/flow-registry.ts
-import { generateSupportEmailDraft } from '@/ai/flows/generate-support-email-draft';
-// import { otherFlow } from '@/ai/flows/other';
+import { generateSupportEmailDraft } from './ai/flows/generate-support-email-draft';
 
 export function resolveFlowEntry(spec: { id: string; meta?: { entry?: string } }): (...args: any[]) => any {
   const entry = spec.meta?.entry || spec.id;

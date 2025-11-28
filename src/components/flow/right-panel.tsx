@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import type { FlowSpec, NodeSpec } from "@/lib/types";
+import { useState, useEffect, useCallback } from "react";
+import type { FlowSpec, NodeSpec, RunRecord } from "@fluxion/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,7 @@ function FlowTabsPanel({ flow, onRunFlow, isPending, onFlowChange }: { flow: Flo
         <FlowTestPanel flow={flow} onRunFlow={onRunFlow} isPending={isPending} />
       </TabsContent>
       <TabsContent value="history" className="flex-1 m-0 overflow-hidden">
-        <div className="p-4 text-sm text-muted-foreground">Run history is temporarily unavailable.</div>
+        <RunHistoryPanel flow={flow} />
       </TabsContent>
        <TabsContent value="details" className="flex-1 flex flex-col m-0 overflow-hidden">
         <FlowDetailsPanel flow={flow} onFlowChange={onFlowChange} />
@@ -150,7 +150,7 @@ function FlowTestPanel({ flow, onRunFlow, isPending }: { flow: FlowSpec, onRunFl
     <div className="p-4 h-full flex flex-col">
        <div className="pb-4 border-b shrink-0">
          <h3 className="text-lg font-semibold font-headline">Test Runner</h3>
-         <p className="text-sm text-muted-foreground">Test the '{flow.id}' flow.</p>
+         <p className="text-sm text-muted-foreground">Test the &ldquo;{flow.id}&rdquo; flow.</p>
        </div>
        <ScrollArea className="flex-1 py-4">
         <div className="flex flex-col gap-4 px-1">
@@ -242,6 +242,75 @@ function FlowDetailsPanel({ flow, onFlowChange }: { flow: FlowSpec, onFlowChange
        </ScrollArea>
     </div>
   )
+}
+
+
+function RunHistoryPanel({ flow }: { flow: FlowSpec }) {
+  const [runs, setRuns] = useState<RunRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRuns = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/runs/${flow.id}?limit=20`);
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Failed to load runs');
+      }
+      setRuns(data.runs || []);
+    } catch (err: any) {
+      setError(err.message || 'Unable to load run history.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [flow.id]);
+
+  useEffect(() => {
+    fetchRuns();
+  }, [fetchRuns, flow.version]);
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b p-4">
+        <div>
+          <h3 className="text-lg font-semibold font-headline">Run History</h3>
+          <p className="text-sm text-muted-foreground">Latest executions for &ldquo;{flow.id}&rdquo;</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchRuns} disabled={isLoading}>
+          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          Refresh
+        </Button>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {error && <div className="text-sm text-destructive">{error}</div>}
+          {!error && runs.length === 0 && !isLoading && (
+            <p className="text-sm text-muted-foreground">No runs recorded yet.</p>
+          )}
+          {runs.map((run) => (
+            <div key={run.id} className="rounded-lg border p-3 text-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold capitalize">{run.status}</span>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(run.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground flex gap-3">
+                <span>Version: {run.specVersion}</span>
+                {run.durationMs && <span>Duration: {run.durationMs}ms</span>}
+              </div>
+              {run.error && <p className="text-xs text-destructive">Error: {run.error}</p>}
+              {run.outputSummary && (
+                <p className="text-xs text-muted-foreground truncate">Output: {run.outputSummary}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
 }
 
     

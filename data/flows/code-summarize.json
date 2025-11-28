@@ -1,0 +1,125 @@
+{
+  "id": "code-summarize",
+  "version": "0.1.0",
+  "policy": "default",
+  "nodes": [
+    {
+      "kind": "HTTP",
+      "name": "repo-ingest",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "url": "https://api.github.com/repos/:org/:repo/contents"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "summarize",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "risk-highlights",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "HumanApprove",
+      "name": "approve",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "queue": "dev-leads"
+      }
+    },
+    {
+      "kind": "HTTP",
+      "name": "open-pr",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "url": "https://api.github.com/repos/:org/:repo/pulls"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "repo-ingest",
+      "out": "output",
+      "to": "summarize",
+      "in": "input"
+    },
+    {
+      "from": "summarize",
+      "out": "output",
+      "to": "risk-highlights",
+      "in": "input"
+    },
+    {
+      "from": "risk-highlights",
+      "out": "output",
+      "to": "approve",
+      "in": "input"
+    },
+    {
+      "from": "approve",
+      "out": "output",
+      "to": "open-pr",
+      "in": "input"
+    }
+  ]
+}

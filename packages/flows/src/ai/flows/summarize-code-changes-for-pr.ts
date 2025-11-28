@@ -1,4 +1,3 @@
- 'use server';
 /**
  * @fileOverview Summarizes code changes for a pull request.
  *
@@ -7,9 +6,9 @@
  * - SummarizeCodeChangesForPROutput - The return type for the summarizeCodeChangesForPR function.
  */
 
-import {ai} from '@/ai/genkit';
-import { runPromptWithRetry } from '@/ai/utils';
-import {z} from 'genkit';
+import { ai } from '../genkit';
+import { runPromptWithRetry } from '../utils';
+import { z } from 'genkit';
 
 const SummarizeCodeChangesForPRInputSchema = z.object({
   diff: z.string().describe('The code diff to summarize.'),

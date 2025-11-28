@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { NodeSpec } from "@/lib/types";
+import type { NodeSpec } from "@fluxion/types";
 import { getNodeIcon } from "@/components/icons";
 import { Button } from "../ui/button";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";

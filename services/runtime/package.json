@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "@fluxion/flows": "0.1.0",
+    "@fluxion/local-store": "0.1.0",
+    "@fluxion/types": "0.1.0",
     "fastify": "^4.28.1",
     "ioredis": "^5.4.1",
     "pg": "^8.13.1"

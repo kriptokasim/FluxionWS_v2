@@ -12,7 +12,7 @@ import {
 import { MainNav } from '@/components/layout/main-nav';
 import { ArrowRight, Bot, GitMerge, Webhook } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { FlowSpec } from '@/lib/types';
+import type { FlowSpec } from '@fluxion/types';
 import { mockFlows } from '@/lib/mock-data';
 
 const flowIcons: { [key: string]: React.ReactNode } = {

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { FlowSpec } from "@/lib/types";
+import type { FlowSpec } from "@fluxion/types";
 import { FlowNode } from "./flow-node";
 import { ArrowDown } from "lucide-react";
 

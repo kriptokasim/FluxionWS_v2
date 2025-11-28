@@ -1,0 +1,125 @@
+{
+  "id": "web-to-csv",
+  "version": "0.1.0",
+  "policy": "default",
+  "nodes": [
+    {
+      "kind": "HTTP",
+      "name": "crawl",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "url": "https://example.com/data"
+      }
+    },
+    {
+      "kind": "Parse",
+      "name": "extract-tables",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "type": "html"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "normalize",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "validate-schema",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "Storage",
+      "name": "push-to-warehouse",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {}
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {}
+        }
+      ],
+      "config": {
+        "path": "gs://my-bucket/data/output.csv"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "crawl",
+      "out": "output",
+      "to": "extract-tables",
+      "in": "input"
+    },
+    {
+      "from": "extract-tables",
+      "out": "output",
+      "to": "normalize",
+      "in": "input"
+    },
+    {
+      "from": "normalize",
+      "out": "output",
+      "to": "validate-schema",
+      "in": "input"
+    },
+    {
+      "from": "validate-schema",
+      "out": "output",
+      "to": "push-to-warehouse",
+      "in": "input"
+    }
+  ]
+}

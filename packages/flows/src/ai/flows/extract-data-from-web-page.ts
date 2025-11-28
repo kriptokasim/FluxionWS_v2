@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview Extracts relevant information from a web page into a structured format like CSV using an LLM.
  *
@@ -7,9 +6,9 @@
  * - ExtractDataFromWebPageOutput - The return type for the extractDataFromWebPage function.
  */
 
-import {ai} from '@/ai/genkit';
-import { runPromptWithRetry } from '@/ai/utils';
-import {z} from 'genkit';
+import { ai } from '../genkit';
+import { runPromptWithRetry } from '../utils';
+import { z } from 'genkit';
 
 const ExtractDataFromWebPageInputSchema = z.object({
   url: z.string().describe('The URL of the web page to extract data from.'),

@@ -1,0 +1,230 @@
+{
+  "id": "support-triage",
+  "version": "0.1.0",
+  "meta": {
+    "entry": "generateSupportEmailDraft"
+  },
+  "policy": "default",
+  "nodes": [
+    {
+      "kind": "LLMCall",
+      "name": "classify",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "subject": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject",
+              "body"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "rag",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "context"
+            ]
+          }
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "LLMCall",
+      "name": "fix-plan",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "context"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "plan": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "plan"
+            ]
+          }
+        }
+      ],
+      "config": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      }
+    },
+    {
+      "kind": "HumanApprove",
+      "name": "approve",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "plan": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "plan"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "approved": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "approved"
+            ]
+          }
+        }
+      ],
+      "config": {
+        "queue": "support-leads"
+      }
+    },
+    {
+      "kind": "HTTP",
+      "name": "create-issue",
+      "inputs": [
+        {
+          "name": "input",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "plan": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "plan"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "schema": {
+            "type": "object"
+          }
+        }
+      ],
+      "config": {
+        "url": "https://api.github.com/repos/:org/:repo/issues"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "classify",
+      "out": "output",
+      "to": "rag",
+      "in": "input"
+    },
+    {
+      "from": "rag",
+      "out": "output",
+      "to": "fix-plan",
+      "in": "input"
+    },
+    {
+      "from": "fix-plan",
+      "out": "output",
+      "to": "approve",
+      "in": "input"
+    },
+    {
+      "from": "approve",
+      "out": "output",
+      "to": "create-issue",
+      "in": "input"
+    }
+  ]
+}

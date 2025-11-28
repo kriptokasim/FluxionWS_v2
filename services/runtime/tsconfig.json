@@ -1,5 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "outDir": "dist" },
+  "compilerOptions": {
+    "outDir": "dist",
+    "paths": {
+      "@fluxion/flows": ["../../packages/flows/src"],
+      "@fluxion/local-store": ["../../packages/local-store/src"],
+      "@fluxion/types": ["../../packages/types/src"]
+    }
+  },
   "include": ["src"]
 }

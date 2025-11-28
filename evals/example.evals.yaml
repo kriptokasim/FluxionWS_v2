@@ -1,6 +1,10 @@
-suite: hello-world
-metrics: [json_validity]
+suite: support-triage-happy-path
+flowId: support-triage
+metrics: [contains]
 cases:
-  - name: echo-llm
-    input: { prompt: "Say hi" }
-    expect: { contains: "hi" }
+  - name: produce-draft
+    input:
+      subject: "Need a refund"
+      body: "Order #123 broke immediately. Please refund."
+    expect:
+      contains: "refund"

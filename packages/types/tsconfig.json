@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "paths": {
-      "@fluxion/sdk": ["../../packages/sdk/src"]
-    }
+    "rootDir": "src",
+    "declaration": true,
+    "emitDeclarationOnly": false
   },
   "include": ["src"]
 }

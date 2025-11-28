@@ -1,5 +1,3 @@
-
-
 export type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
 
 export interface PortSchema {
@@ -16,13 +14,22 @@ export interface NodeSpec {
 }
 
 export interface FlowSpec {
-  id: string;               // e.g., "support-triage"
-  version: string;          // semver, e.g., "0.1.0"
-  policy?: string;          // policy id, e.g., "default"
-  meta?: { entry?: string } // name of server-side entry function to call
+  id: string;
+  version: string;
+  policy?: string;
+  meta?: { entry?: string };
   nodes: Array<NodeSpec>;
   edges: Array<{ from: string; out: string; to: string; in: string }>;
-  createdAt?: number;       // server timestamp (ms)
+  createdAt?: number;
+}
+
+export interface RunEvent {
+  kind: string;
+  node: string;
+  ts: number;
+  data?: Json;
+  ms?: number;
+  error?: string;
 }
 
 export interface RunRecord {
@@ -35,13 +42,4 @@ export interface RunRecord {
   durationMs?: number;
   error?: string;
   events?: RunEvent[];
-}
-
-export interface RunEvent {
-  kind: string;
-  node: string;
-  ts: number;
-  data?: Json;
-  ms?: number;
-  error?: string;
 }

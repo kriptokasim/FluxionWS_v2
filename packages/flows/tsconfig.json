@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "paths": {
+      "@fluxion/types": ["../types/dist"],
+      "@fluxion/local-store": ["../local-store/dist"]
+    }
+  },
+  "include": ["src"]
+}

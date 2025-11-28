@@ -2,16 +2,18 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import type { FlowSpec, NodeSpec } from "@/lib/types";
+import type { FlowSpec, NodeSpec } from "@fluxion/types";
 import { NodePalette } from "./node-palette";
 import { FlowCanvas } from "./flow-canvas";
 import { RightPanel } from "./right-panel";
 import { Button } from "@/components/ui/button";
 import { Loader2, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { runFlowAction, saveFlowSpecAction } from "@/lib/actions";
+import { saveFlowSpecAction } from "@/lib/actions";
 import { HumanApprovalModal } from "./human-approval-modal";
 import semver from 'semver';
+
+const runtimeUrl = process.env.NEXT_PUBLIC_RUNTIME_URL || 'http://localhost:4000';
 
 const defaultNodeConfig: { [key: string]: Partial<NodeSpec> } = {
   LLMCall: { inputs: [{ name: "input", schema: {}}], outputs: [{ name: "output", schema: {}}], config: { provider: "google", model: "gemini-2.5-flash" } },
@@ -22,6 +24,33 @@ const defaultNodeConfig: { [key: string]: Partial<NodeSpec> } = {
   Storage: { inputs: [{ name: "input", schema: {}}], outputs: [{ name: "output", schema: {}}], config: { path: "output.txt" } },
   Input: { inputs: [], outputs: [{ name: "output", schema: {}}], config: {} },
 };
+
+type RunPayload = {
+  flowId: string;
+  version?: string;
+  input: any;
+};
+
+async function invokeRuntime(payload: RunPayload) {
+  const response = await fetch(`${runtimeUrl}/v1/runs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  let data: any;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('Runtime returned an invalid response.');
+  }
+
+  if (!response.ok || !data?.ok) {
+    throw new Error(data?.error || `Runtime error (status ${response.status})`);
+  }
+
+  return data;
+}
 
 
 export function FlowEditorClient({ flow: initialFlow }: { flow: FlowSpec }) {
@@ -119,31 +148,34 @@ export function FlowEditorClient({ flow: initialFlow }: { flow: FlowSpec }) {
 
   const handleRunFlow = (input: any) => {
     startTransition(async () => {
-      const result = await runFlowAction({
-        flowId: flow.id,
-        version: flow.version,
-        input: input,
-      });
-      
-      if (!result.ok) {
+      try {
+        const result = await invokeRuntime({
+          flowId: flow.id,
+          version: flow.version,
+          input,
+        });
+
+        if (result.out?.status === 'pending_approval') {
+          setApprovalState({
+            draft: result.out.text,
+            runId: result.out.runId,
+            flowId: result.out.flowId,
+          });
+        } else {
+          toast({
+            title: "Flow Executed Successfully",
+            description: (
+              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                <code className="text-white">{JSON.stringify(result.out, null, 2)}</code>
+              </pre>
+            ),
+          });
+        }
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Flow Execution Failed",
-          description: result.error,
-        });
-        return;
-      }
-
-      if (result.out?.status === 'pending_approval') {
-        setApprovalState({
-          draft: result.out.text,
-          runId: result.out.runId,
-          flowId: result.out.flowId,
-        });
-      } else {
-        toast({
-          title: "Flow Executed Successfully",
-          description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4"><code className="text-white">{JSON.stringify(result.out, null, 2)}</code></pre>,
+          description: error.message || 'Runtime error',
         });
       }
     });
@@ -156,21 +188,25 @@ export function FlowEditorClient({ flow: initialFlow }: { flow: FlowSpec }) {
     setApprovalState(null);
     
     startTransition(async () => {
-       const result = await runFlowAction({
-        flowId: stateToContinue.flowId,
-        input: { approvedText, runId: stateToContinue.runId },
-      });
+      try {
+        const result = await invokeRuntime({
+          flowId: stateToContinue.flowId,
+          input: { approvedText, runId: stateToContinue.runId },
+        });
 
-      if (result.ok) {
         toast({
           title: "Flow Approved & Completed",
-          description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4"><code className="text-white">{JSON.stringify(result.out, null, 2)}</code></pre>,
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">{JSON.stringify(result.out, null, 2)}</code>
+            </pre>
+          ),
         });
-      } else {
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Approval Failed",
-          description: result.error,
+          description: error.message || 'Runtime error',
         });
       }
     });

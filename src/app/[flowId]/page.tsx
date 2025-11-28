@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { FlowEditorClient } from '@/components/flow/flow-editor-client';
-import { getFlowSpecById } from '@/lib/storage/local-store';
+import { getFlowSpec as getFlowSpecById } from '@fluxion/local-store';
 import { mockFlows } from '@/lib/mock-data';
 import { InitializeFlowButton } from '@/components/flow/initialize-flow-button';
 
@@ -22,7 +22,7 @@ export default async function FlowPage({ params }: FlowPageProps) {
       <div className="flex min-h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
         <h2 className="text-2xl font-semibold font-headline">Flow not initialized</h2>
         <p className="text-muted-foreground max-w-lg">
-          The "{flowId}" template exists but has not been copied into your local workspace yet.
+          The &ldquo;{flowId}&rdquo; template exists but has not been copied into your local workspace yet.
           Initialize it to start editing locally.
         </p>
         <InitializeFlowButton flowId={flowId} />
